@@ -2,7 +2,9 @@
   <div class="add-student">
     <div class="top-bar">
       <el-breadcrumb separator-class="el-icon-arrow-right">
-        <el-breadcrumb-item>学生管理</el-breadcrumb-item>
+        <el-breadcrumb-item style="font-weight: 800"
+          >学生管理</el-breadcrumb-item
+        >
         <el-breadcrumb-item>添加学生</el-breadcrumb-item>
       </el-breadcrumb>
     </div>
@@ -18,16 +20,30 @@
           accept=".xls, .xlsx"
           :headers="header"
         >
-          <button style="width:150px" class="pan-btn primary-btn" type="button">批量导入学生信息</button>
+          <button
+            style="width: 150px"
+            class="pan-btn primary-btn"
+            type="button"
+          >
+            批量导入学生信息
+          </button>
         </el-upload>
         <el-button
-          style="color:#5044d4;margin-left:20px"
+          style="color: #5044d4; margin-left: 20px"
           type="text"
           @click="downloadExcel()"
-        >下载学生样表</el-button>
+          >下载学生样表</el-button
+        >
       </div>
       <div class="add-form">
-        <el-form :model="stuForm" :rules="rules" ref="stuForm" label-width="100px" class="form">
+        <el-form
+          :model="stuForm"
+          :rules="rules"
+          ref="stuForm"
+          label-width="100px"
+          class="form"
+          :label-position="labelPosition"
+        >
           <el-form-item label="姓名" prop="name">
             <el-input v-model="stuForm.name"></el-input>
           </el-form-item>
@@ -39,7 +55,12 @@
             </el-select>
           </el-form-item>
           <el-form-item label="学校" prop="school">
-            <el-select v-model="stuForm.school" placeholder="请选择" filterable @change="schoolChange">
+            <el-select
+              v-model="stuForm.school"
+              placeholder="请选择"
+              filterable
+              @change="schoolChange"
+            >
               <el-option
                 v-for="item in schoolData"
                 :key="item.id"
@@ -71,15 +92,32 @@
             <el-input v-model="stuForm.email"></el-input>
           </el-form-item>
           <el-form-item>
-            <button class="pan-btn primary-btn" type="button" @click="submitForm('stuForm')">立即添加</button>
+            <button
+              class="pan-btn primary-btn"
+              type="button"
+              @click="submitForm('stuForm')"
+            >
+              立即添加
+            </button>
             <el-button
               type="button"
-              style="background-color:#fff ;color:#5044d4"
+              style="background-color: #fff; color: #5044d4; margin-left: 20px"
               class="pan-btn primary-btn"
               @click="resetForm('stuForm')"
-            >重置</el-button>
+              >重置</el-button
+            >
           </el-form-item>
         </el-form>
+        <div class="error" v-show="errorVisible">
+          <el-alert
+            class="error-alert animate__animated animate__fadeInDown"
+            v-for="item in errorData"
+            :key="item.index"
+            :title="'行' + item.index + '   ' + item.message"
+            type="error"
+          >
+          </el-alert>
+        </div>
       </div>
     </div>
   </div>
@@ -89,6 +127,19 @@ import { isCardID, isTelOk, isChines } from "@/tools/regular";
 import * as student from "@/api/manager/student";
 import { getSchool, getClass } from "@/api/manager/manager_common";
 export default {
+  computed: {
+    screenSize() {
+      return this.$store.state.screenWH;
+    },
+  },
+  mounted() {
+    this.resize();
+  },
+  watch: {
+    screenSize(newVal) {
+      this.resize();
+    },
+  },
   created() {
     this.header.TOKEN = this.$store.state.userInfo.token;
     this.getSchool();
@@ -142,8 +193,11 @@ export default {
         qq: "",
         email: "",
       },
+      errorData: [],
+      errorVisible: false,
       classData: [],
       schoolData: [],
+      labelPosition: "right",
       rules: {
         name: [
           { required: true, validator: checkName, trigger: "blur" },
@@ -166,8 +220,19 @@ export default {
     };
   },
   methods: {
+    resize() {
+      const maxW = this.screenSize.maxW;
+      const maxH = this.screenSize.maxH;
+      if (maxW <= 500) {
+        this.labelPosition = "top";
+      } else {
+        this.labelPosition = "right";
+      }
+    },
     handleExcelSuccess(res, file) {
-      this.imageUrl = URL.createObjectURL(file.raw);
+      console.log(res);
+      this.errorVisible = false;
+      this.errorData = [];
     },
     handleExceed(files, fileList) {
       this.$message.warning(
@@ -177,7 +242,10 @@ export default {
       );
     },
     handleExcelError(err, file, fileList) {
-      this.$message.error("上传失败");
+      this.$message.error("上传失败,请重新上传");
+      const error = JSON.parse(err.message);
+      this.errorData = error.err_data;
+      this.errorVisible = true;
     },
     submitForm(formName) {
       this.$refs[formName].validate(async (valid) => {
@@ -228,10 +296,32 @@ export default {
       width: 250px;
       justify-content: space-between;
     }
+    .upload-dialog {
+      width: 200px;
+      height: 200px;
+      position: absolute;
+      top: 240px;
+      left: 115px;
+      background-color: #fff;
+      z-index: 5000;
+      box-shadow: 0px 0px 5px #ccc;
+    }
     .add-form {
       margin-top: 3%;
+      position: relative;
       .form {
         width: 40%;
+      }
+    }
+    .error {
+      width: 30%;
+      position: absolute;
+      height: 400px;
+      overflow: auto;
+      top: 0;
+      right: 0;
+      .error-alert {
+        margin-top: 10px;
       }
     }
     .el-select {
@@ -245,6 +335,23 @@ export default {
     .el-breadcrumb__inner {
       cursor: default !important;
     }
+  }
+}
+</style>
+<style lang="scss">
+@media screen and (max-width: 1200px) {
+  .form {
+    width: 60% !important;
+  }
+}
+@media screen and (max-width: 700px) {
+  .form {
+    width: 80% !important;
+  }
+}
+@media screen and (max-width: 500px) {
+  .form {
+    width: 100% !important;
   }
 }
 </style>

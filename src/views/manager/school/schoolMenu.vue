@@ -2,7 +2,7 @@
   <div class="school-menu">
     <div class="top-bar">
       <el-breadcrumb separator-class="el-icon-arrow-right">
-        <el-breadcrumb-item>学校管理</el-breadcrumb-item>
+        <el-breadcrumb-item style="font-weight: 800;">学校管理</el-breadcrumb-item>
         <el-breadcrumb-item>所有学校</el-breadcrumb-item>
       </el-breadcrumb>
     </div>
@@ -10,16 +10,25 @@
       <div class="head">
         <div class="search">
           <!-- <el-input v-model="school" placeholder="请输入学校名称"></el-input> -->
-          <md-input v-model="school" icon="el-icon-search" name="title" placeholder="请输入学校名称">学校名称</md-input>
-          <button class="pan-btn primary-btn" @click="querySchool">立即查询</button>
+          <effect-input
+            v-model="school"
+            class="effect"
+            placeholder="请输入学校名称"
+          ></effect-input>
+          <!-- <md-input v-model="school" icon="el-icon-search" name="title" placeholder="请输入学校名称">学校名称</md-input> -->
+          <button class="pan-btn primary-btn" @click="querySchool">
+            立即查询
+          </button>
         </div>
         <div class="add">
           <button
             class="pan-btn primary-btn animate__animated animate__rotateInDownLeft"
             v-if="!isAdd"
-            @click="isAdd=!isAdd"
+            @click="isAdd = !isAdd"
             style="animation-duration: 500ms"
-          >添加学校</button>
+          >
+            添加学校
+          </button>
           <el-form
             :inline="true"
             :model="schoolAddForm"
@@ -30,28 +39,40 @@
             v-else
           >
             <el-form-item label="学校名称" prop="school_name">
-              <el-input v-model="schoolAddForm.school_name" placeholder="请输入学校名称"></el-input>
+              <el-input
+                v-model="schoolAddForm.school_name"
+                placeholder="请输入学校名称"
+              ></el-input>
             </el-form-item>
             <el-form-item label="学校简介" prop="school_info">
-              <el-input v-model="schoolAddForm.school_info" placeholder="请输入学校简介"></el-input>
+              <el-input
+                v-model="schoolAddForm.school_info"
+                placeholder="请输入学校简介"
+              ></el-input>
             </el-form-item>
             <el-form-item>
               <button
                 type="button"
                 class="pan-btn primary-btn"
                 @click="submitAddForm('schoolAddForm')"
-              >添加</button>
+              >
+                添加
+              </button>
               <button
                 type="button"
-                style="background-color:#fff ;color:#5044d4"
+                style="background-color: #fff; color: #5044d4"
                 class="pan-btn primary-btn"
                 @click="resetAddForm('schoolAddForm')"
-              >重置</button>
+              >
+                重置
+              </button>
               <button
-                style="background-color:#fff ;color:#5044d4"
+                style="background-color: #fff; color: #5044d4"
                 class="pan-btn primary-btn"
-                @click="isAdd=!isAdd"
-              >取消</button>
+                @click="isAdd = !isAdd"
+              >
+                取消
+              </button>
             </el-form-item>
           </el-form>
         </div>
@@ -66,36 +87,53 @@
         />
         <el-form :rules="rules" :model="schoolForm" ref="schoolForm">
           <el-table :data="schoolData" stripe style="width: 100%">
-            <el-table-column prop="id" label="学校ID" align="center"></el-table-column>
+            <el-table-column
+              prop="id"
+              label="学校ID"
+              align="center"
+            ></el-table-column>
             <el-table-column prop="school_name" label="学校名称" align="center">
-              <template slot-scope="{row}">
+              <template slot-scope="{ row }">
                 <el-form-item v-show="row.isEdit" prop="school_name">
                   <el-input v-model="schoolForm.school_name"></el-input>
                 </el-form-item>
-                <span v-show="!row.isEdit">{{row.school_name}}</span>
+                <span v-show="!row.isEdit">{{ row.school_name }}</span>
               </template>
             </el-table-column>
             <el-table-column prop="school_info" label="描述" align="center">
-              <template slot-scope="{row}">
+              <template slot-scope="{ row }">
                 <el-form-item v-show="row.isEdit" prop="school_info">
                   <el-input v-model="schoolForm.school_info"></el-input>
                 </el-form-item>
-                <span v-show="!row.isEdit">{{row.school_info}}</span>
+                <span v-show="!row.isEdit">{{ row.school_info }}</span>
               </template>
             </el-table-column>
-            <el-table-column prop="school_date" label="注册时间" align="center" v-if="showTableCol"></el-table-column>
+            <el-table-column
+              prop="school_date"
+              label="注册时间"
+              align="center"
+              v-if="showTableCol"
+            ></el-table-column>
             <el-table-column label="操作" align="center">
               <template slot-scope="scope">
                 <div v-show="scope.row.isEdit">
-                  <i class="el-icon-check" @click="submitSchool('schoolForm',scope.row)"></i>
-                  <i class="el-icon-close" @click="cansolSubmit('schoolForm',scope.row)"></i>
+                  <i
+                    class="el-icon-check"
+                    @click="submitSchool('schoolForm', scope.row)"
+                  ></i>
+                  <i
+                    class="el-icon-close"
+                    @click="cansolSubmit('schoolForm', scope.row)"
+                  ></i>
                 </div>
 
                 <div v-show="!scope.row.isEdit">
                   <i class="el-icon-edit" @click="editSchool(scope.row)"></i>
                   <i
                     class="el-icon-delete"
-                    @click="deleteSchool(scope.$index,scope.row.id,schoolData)"
+                    @click="
+                      deleteSchool(scope.$index, scope.row.id, schoolData)
+                    "
                   ></i>
                 </div>
               </template>
@@ -117,12 +155,13 @@
 </template>
 <script>
 import VueElementLoading from "vue-element-loading";
-import MdInput from "@/components/common/MDinput";
-
+// import MdInput from "@/components/common/MDinput";
+import effectInput from "@/components/common/effectInput";
 export default {
   components: {
     VueElementLoading,
-    MdInput,
+    // MdInput,
+    effectInput,
   },
   data() {
     const checkName = (rule, value, callback) => {
@@ -401,7 +440,11 @@ export default {
         align-items: center;
         margin-right: 2%;
         min-width: 300px;
-        .material-input__component {
+        // .material-input__component {
+        //   width: 65%;
+        //   margin-right: 20px;
+        // }
+        .effect{
           width: 65%;
           margin-right: 20px;
         }

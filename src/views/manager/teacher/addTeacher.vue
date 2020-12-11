@@ -2,7 +2,9 @@
   <div class="add-student">
     <div class="top-bar">
       <el-breadcrumb separator-class="el-icon-arrow-right">
-        <el-breadcrumb-item>教师管理</el-breadcrumb-item>
+        <el-breadcrumb-item style="font-weight: 800"
+          >教师管理</el-breadcrumb-item
+        >
         <el-breadcrumb-item>添加教师</el-breadcrumb-item>
       </el-breadcrumb>
     </div>
@@ -14,16 +16,24 @@
           :limit="1"
           :on-success="handleExcelSuccess"
           :on-exceed="handleExceed"
+          :on-error="handleExcelError"
           accept=".xls, .xlsx"
           :headers="header"
         >
-          <button type="button" style="width:150px" class="pan-btn primary-btn">批量导入教师信息</button>
+          <button
+            type="button"
+            style="width: 150px"
+            class="pan-btn primary-btn"
+          >
+            批量导入教师信息
+          </button>
         </el-upload>
         <el-button
           type="text"
-          style="color:#5044d4;margin-left:20px"
+          style="color: #5044d4; margin-left: 20px"
           @click="downloadExcel()"
-        >下载教师样表</el-button>
+          >下载教师样表</el-button
+        >
       </div>
       <div class="add-form">
         <el-form
@@ -32,6 +42,7 @@
           ref="teacherForm"
           label-width="100px"
           class="form"
+          :label-position="labelPosition"
         >
           <el-form-item label="姓名" prop="name">
             <el-input v-model="teacherForm.name"></el-input>
@@ -44,97 +55,138 @@
             </el-select>
           </el-form-item>
           <el-form-item label="学校" prop="school">
-            <el-select v-model="teacherForm.school" placeholder="请选择" filterable>
-              <el-option v-for="item in schools" :key="item.id" :label="item.name" :value="item.id"></el-option>
+            <el-select
+              v-model="teacherForm.school"
+              placeholder="请选择"
+              filterable
+            >
+              <el-option
+                v-for="item in schools"
+                :key="item.id"
+                :label="item.school_name"
+                :value="item.id"
+              ></el-option>
             </el-select>
           </el-form-item>
-          <el-form-item label="教师类型" prop="type">
-            <el-select v-model="teacherForm.type" placeholder="请选择">
-              <el-option label="课程教师" :value="0"></el-option>
-              <el-option label="辅导员" :value="1"></el-option>
+          <el-form-item label="教师职称" prop="title">
+            <el-select v-model="teacherForm.title" placeholder="请选择">
+              <el-option label="三级教师" value="三级教师"></el-option>
+              <el-option label="二级教师" value="二级教师"></el-option>
+              <el-option label="一级教师" value="一级教师"></el-option>
+              <el-option label="高级教师" value="高级教师"></el-option>
+              <el-option label="正高级教师" value="正高级教师"></el-option>
             </el-select>
           </el-form-item>
-          <el-form-item label="班级" prop="class" v-if="teacherForm.type==1">
-            <el-select v-model="teacherForm.class" placeholder="请选择" filterable>
-              <el-option v-for="item in classes" :key="item.id" :label="item.name" :value="item.id"></el-option>
-            </el-select>
+          <el-form-item label="身份证号" prop="card">
+            <el-input v-model="teacherForm.card"></el-input>
           </el-form-item>
-
-          <el-form-item label="身份证号" prop="cardId">
-            <el-input v-model="teacherForm.cardId"></el-input>
+          <el-form-item label="联系方式" prop="phone_number">
+            <el-input v-model="teacherForm.phone_number"></el-input>
           </el-form-item>
-          <el-form-item label="联系方式" prop="phone">
-            <el-input v-model="teacherForm.phone"></el-input>
+          <el-form-item label="QQ" prop="qq">
+            <el-input v-model="teacherForm.qq"></el-input>
           </el-form-item>
-          <el-form-item>
+          <el-form-item label="Email" prop="email">
+            <el-input v-model="teacherForm.email"></el-input>
+          </el-form-item>
+          <el-form-item style="margin-left: 15%">
             <button
               type="button"
               class="pan-btn primary-btn"
-              @click="submitForm('teacherForm')"
-            >立即添加</button>
+              @click="submitAddForm('teacherForm')"
+            >
+              立即添加
+            </button>
             <button
               type="button"
-              style="background-color:#fff ;color:#5044d4"
+              style="background-color: #fff; color: #5044d4; margin-left: 20px"
               class="pan-btn primary-btn"
-              @click="resetForm('teacherForm')"
-            >重置</button>
+              @click="resetAddForm('teacherForm')"
+            >
+              重置
+            </button>
           </el-form-item>
         </el-form>
+        <div class="error" v-show="errorVisible">
+          <el-alert
+            class="error-alert animate__animated animate__fadeInDown"
+            v-for="item in errorData"
+            :key="item.index"
+            :title="'行' + item.index + '   ' + item.message"
+            type="error"
+          >
+          </el-alert>
+        </div>
       </div>
     </div>
   </div>
 </template>
 <script>
-import { isCardID, isTelOk, isChines } from "../../../tools/regular";
+import * as regular from "@/tools/regular";
+import { getSchool, getClass } from "@/api/manager/manager_common";
+import * as teacher from "@/api/manager/teacher";
 export default {
   created() {
     this.header.TOKEN = this.$store.state.userInfo.token;
+    this.getSchool();
   },
   data() {
     const checkName = (rule, value, callback) => {
-      const isName = isChines(value);
+      const isName = regular.isChines(value);
       if (isName != true || !value) {
-        callback(isName);
+        callback(new Error(isName));
       } else {
         callback();
       }
     };
     const checkCardId = (rule, value, callback) => {
-      const isCardId = isCardID(value);
+      const isCardId = regular.isCardID(value);
       if (isCardId != true || !value) {
-        callback(isCardId);
+        callback(new Error(isCardId));
       } else {
         callback();
       }
     };
     const checkPhone = (rule, value, callback) => {
-      const isPhone = isTelOk(value);
+      const isPhone = regular.isTelOk(value);
       if (isPhone != true || !value) {
-        callback(isPhone);
+        callback(new Error(isPhone));
       } else {
         callback();
       }
     };
+    const checkEmail = (rule, value, callback) => {
+      if (!value) {
+        callback();
+      }
+      if (!regular.isEmail(value)) callback(new Error("邮箱格式错误"));
+      callback();
+    };
+    const checkQQ = (rule, value, callback) => {
+      if (!value) {
+        callback();
+      }
+      if (!regular.isQQ(value)) callback(new Error("QQ格式错误"));
+      callback();
+    };
     return {
-      teacherForm: {},
+      teacherForm: {
+        name: "",
+        sex: 0,
+        school: "",
+        title: "一级",
+        card: "",
+        phone_number: "",
+        qq: "",
+        email: "",
+      },
       header: {
         TOKEN: "",
       },
-      classes: [
-        {
-          id: 0,
-          name: "一班",
-        },
-        {
-          id: 1,
-          name: "二班",
-        },
-        {
-          id: 2,
-          name: "三班",
-        },
-      ],
       schools: [],
+      errorData: [],
+      errorVisible: true,
+      labelPosition: "right",
       rules: {
         name: [
           { required: true, validator: checkName, trigger: "blur" },
@@ -147,16 +199,42 @@ export default {
         ],
         type: [{ required: true, message: "请选择性别", trigger: "change" }],
         sex: [{ required: true, message: "请选择性别", trigger: "change" }],
-        class: [{ required: true, message: "请选择班级", trigger: "change" }],
         school: [{ required: true, message: "请选择学校", trigger: "change" }],
-        cardId: [{ required: true, validator: checkCardId, trigger: "blur" }],
-        phone: [{ required: true, validator: checkPhone, trigger: "blur" }],
+        card: [{ required: true, validator: checkCardId, trigger: "blur" }],
+        phone_number: [
+          { required: true, validator: checkPhone, trigger: "blur" },
+        ],
+        email: [{ required: false, validator: checkEmail, trigger: "blur" }],
+        qq: [{ required: false, validator: checkQQ, trigger: "blur" }],
       },
     };
   },
+  computed: {
+    screenSize() {
+      return this.$store.state.screenWH;
+    },
+  },
+  mounted() {
+    this.resize();
+  },
+  watch: {
+    screenSize(newVal) {
+      this.resize();
+    },
+  },
   methods: {
+    resize() {
+      const maxW = this.screenSize.maxW;
+      const maxH = this.screenSize.maxH;
+      if (maxW <= 500) {
+        this.labelPosition = "top";
+      } else {
+        this.labelPosition = "right";
+      }
+    },
     handleExcelSuccess(res, file) {
-      this.imageUrl = URL.createObjectURL(file.raw);
+      this.errorData = [];
+      this.errorVisible = false;
     },
     handleExceed(files, fileList) {
       this.$message.warning(
@@ -165,20 +243,33 @@ export default {
         } 个文件`
       );
     },
-    submitForm(formName) {
-      this.$refs[formName].validate((valid) => {
+    handleExcelError(err, file, fileList) {
+      this.$message.error("上传失败，请重新上传");
+      const error = JSON.parse(err.message);
+      this.errorData = error.err_data;
+      this.errorVisible = true;
+    },
+    submitAddForm(formName) {
+      this.$refs[formName].validate(async (valid) => {
         if (valid) {
+          const resultData = teacher.submitAddForm(this.teacherForm);
+          if (resultData) {
+            this.$refs[formName].resetFields();
+          }
         } else {
           console.log("error submit!!");
           return false;
         }
       });
     },
-    resetForm(formName) {
+    resetAddForm(formName) {
       this.$refs[formName].resetFields();
     },
     downloadExcel() {
       window.location.href = "http://39.108.164.247:8000/FileInfo/download/1";
+    },
+    async getSchool() {
+      this.schools = await getSchool();
     },
   },
 };
@@ -207,13 +298,44 @@ export default {
 
     .add-form {
       margin-top: 3%;
+      position: relative;
       .form {
         width: 40%;
+        margin-top: 20px;
       }
+      .error {
+        width: 30%;
+        position: absolute;
+        height: 400px;
+        overflow: auto;
+        top: 0;
+        right: 0;
+        .error-alert {
+          margin-top: 10px;
+        }
+      }
+    }
+
+    .el-select {
+      width: 100%;
     }
   }
 }
-.pan-btn {
-  margin-left: 20px;
+</style>
+<style lang="scss">
+@media screen and (max-width: 1200px) {
+  .form {
+    width: 60% !important;
+  }
+}
+@media screen and (max-width: 700px) {
+  .form {
+    width: 80% !important;
+  }
+}
+@media screen and (max-width: 500px) {
+  .form {
+    width: 100% !important;
+  }
 }
 </style>

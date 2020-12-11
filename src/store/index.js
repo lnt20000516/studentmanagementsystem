@@ -13,7 +13,8 @@ export default new Vuex.Store({
     userInfo: {},
     count: 0, //应用初始化的数据
     vueElementLoading: false,
-    imgLoading: false // 用于控制图片加载动画
+    imgLoading: false, // 用于控制图片加载动画
+    loading: false,
   },
   getters: {
     getScreenWH(state) {
@@ -44,6 +45,9 @@ export default new Vuex.Store({
     },
     updateImgLoading(state, num) {
       state.imgLoading = num
+    },
+    setLoading(state, num) {
+      state.loading = num
     }
   }
 });

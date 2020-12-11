@@ -2,17 +2,31 @@
   <div>
     <div class="in">
       <el-input v-model="user.user_name" placeholder="用户名"></el-input>
-      <el-input v-model="user.password" placeholder="密码" show-password style="margin-bottom:0"></el-input>
-      <el-checkbox v-model="rememberPass" style="margin:15px 0 15px 0;float:right">记住密码</el-checkbox>
+      <el-input
+        v-model="user.password"
+        placeholder="密码"
+        show-password
+        style="margin-bottom: 0"
+      ></el-input>
+      <el-checkbox
+        v-model="rememberPass"
+        style="margin: 15px 0 15px 0; float: right"
+        >记住密码</el-checkbox
+      >
       <el-button type="primary" @click="login()">登录</el-button>
     </div>
     <div class="btn">
       <a
         href="/login&register/resetPass"
-        style="font-size:15px;color:#409eff; text-decoration: none;"
-      >忘记密码</a>
-      <el-tooltip content="用户名为注册时身份证，默认密码为注册时的手机号码，登录后请前往个人中心页面修改密码" placement="bottom" effect="light">
-        <p style="font-size:15px;color:#409eff; cursor: default;">默认密码</p>
+        style="font-size: 15px; color: #409eff; text-decoration: none"
+        >忘记密码</a
+      >
+      <el-tooltip
+        content="用户名为注册时身份证，默认密码为注册时的手机号码，登录后请前往个人中心页面修改密码"
+        placement="bottom"
+        effect="light"
+      >
+        <p style="font-size: 15px; color: #409eff; cursor: default">默认密码</p>
       </el-tooltip>
     </div>
   </div>
@@ -71,7 +85,8 @@ export default {
               this.$router.push("/teachIndex");
               break;
             }
-            case -1: {
+            case -1:
+            case -2: {
               this.$router.push("/manager");
               break;
             }

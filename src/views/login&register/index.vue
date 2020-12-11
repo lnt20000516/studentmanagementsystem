@@ -3,7 +3,7 @@
     <div class="box">
       <div class="box_left">
         <div class="text">
-          <p class="title">{{title}}</p>
+          <p class="title">{{ title }}</p>
           <p class="name">中小学生管理系统</p>
         </div>
       </div>
@@ -25,22 +25,24 @@ export default {
     if (this.$cookies.isKey("token")) {
       let userInfo = this.$cookies.get("userInfo");
       this.$store.commit("setUserInfo", userInfo);
-      switch (userInfo.role) {
-        case 1: {
-          this.$router.replace("/stuIndex");
-          break;
-        }
-        case 0: {
-          this.$router.replace("/teachIndex");
-          break;
-        }
-        case -1: {
-          this.$router.replace("/manager");
-          break;
-        }
-        case -2: {
-          this.$router.replace("/manager");
-          break;
+      if (userInfo) {
+        switch (userInfo.role) {
+          case 1: {
+            this.$router.replace("/stuIndex");
+            break;
+          }
+          case 0: {
+            this.$router.replace("/teachIndex");
+            break;
+          }
+          case -1: {
+            this.$router.replace("/manager");
+            break;
+          }
+          case -2: {
+            this.$router.replace("/manager");
+            break;
+          }
         }
       }
     }

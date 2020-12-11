@@ -1,13 +1,13 @@
 <template>
-  <div>
+  <div :style="{ height: maxHeight + 'px' }" style="background-color: #edf1f5">
     <el-container>
-      <el-aside :class="[{'open':!isOpen}]">
+      <el-aside :class="[{ open: !isOpen }]">
         <div class="index-menu">
           <div class="header">
             <img src="../../assets/img/logo.png" width="40px" height="40px" />
-            <div @click="open" v-show="showSvg">
-              <menu-close style="cursor: pointer;" v-show="isOpen"></menu-close>
-              <menu-open style="cursor: pointer;" v-show="!isOpen"></menu-open>
+            <div @click="open" v-show="showSvg" class="show-svg">
+              <menu-close style="cursor: pointer" v-show="isOpen"></menu-close>
+              <menu-open style="cursor: pointer" v-show="!isOpen"></menu-open>
             </div>
           </div>
           <el-menu
@@ -17,10 +17,26 @@
             active-text-color="#fff"
             background-color="#2B2F3A"
             text-color="#8991A9"
-            style="border-right:none"
+            style="border-right: none"
             router
           >
-            <el-submenu index="schoolManager">
+            <el-submenu index="administrators" v-show="role == '-1'">
+              <template slot="title">
+                <i>
+                  <administrators-svg></administrators-svg>
+                </i>
+                <span>管理员管理</span>
+              </template>
+              <el-menu-item index="administratorsMenu">
+                <template slot="title">
+                  <i>
+                    <stu-menu></stu-menu>
+                  </i>
+                  <span>管理员名单</span>
+                </template>
+              </el-menu-item>
+            </el-submenu>
+            <el-submenu index="schoolManager" v-show="role == '-1'">
               <template slot="title">
                 <i>
                   <school-manager></school-manager>
@@ -100,6 +116,30 @@
                 </template>
               </el-menu-item>
             </el-submenu>
+            <el-submenu index="parent">
+              <template slot="title">
+                <i>
+                  <parent-svg></parent-svg>
+                </i>
+                <span>家长管理</span>
+              </template>
+              <el-menu-item index="parentMenu">
+                <template slot="title">
+                  <i>
+                    <stu-menu></stu-menu>
+                  </i>
+                  <span>家长名单</span>
+                </template>
+              </el-menu-item>
+              <el-menu-item index="parentAdd">
+                <template slot="title">
+                  <i>
+                    <stu-add></stu-add>
+                  </i>
+                  <span>添加家长</span>
+                </template>
+              </el-menu-item>
+            </el-submenu>
 
             <el-submenu index="clockManager">
               <template slot="title">
@@ -130,33 +170,52 @@
       </el-aside>
       <el-container>
         <el-header>
-          <div :class="[{'margin-left':isOpen}]">
-            <img src="../../assets/img/logo2.png" alt width="150px" height="50px" />
+          <div :class="[{ 'margin-left': isOpen }]">
+            <img
+              src="../../assets/img/logo2.png"
+              alt
+              width="150px"
+              height="50px"
+            />
           </div>
           <div class="head-right dl">
             <img
               :src="userDetails.user_details.avatar"
               width="50px"
               height="50px"
-              @click="showDlog=true"
+              @click="showDlog = true"
               class="dl"
             />
-            <div class="head-dialog animate__animated animate__flipInY dl" v-show="showDlog">
+            <div
+              class="head-dialog animate__animated animate__flipInY dl"
+              v-show="showDlog"
+            >
               <div class="dialog-top dl">
-                <img :src="userDetails.user_details.avatar" width="40px" height="40px" class="dl" />
-                <p
-                  style="white-space: nowrap;overflow: hidden;text-overflow:ellipsis;"
+                <img
+                  :src="userDetails.user_details.avatar"
+                  width="40px"
+                  height="40px"
                   class="dl"
-                >{{userDetails.user_details.name}}</p>
+                />
+                <p
+                  style="
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                  "
+                  class="dl"
+                >
+                  {{ userDetails.user_details.name }}
+                </p>
               </div>
               <ul class="dl">
                 <li class="dl" v-waves>
                   <sex-svg class="dl"></sex-svg>
-                  <p class="dl">{{userDetails.user_details.sex}}</p>
+                  <p class="dl">{{ userDetails.user_details.sex }}</p>
                 </li>
                 <li class="dl" v-waves>
                   <phone-svg class="dl"></phone-svg>
-                  <p class="dl">{{userDetails.phone_number}}</p>
+                  <p class="dl">{{ userDetails.phone_number }}</p>
                 </li>
                 <li @click="loginOut" class="dl" v-waves>
                   <off-svg class="dl"></off-svg>
@@ -166,8 +225,13 @@
             </div>
           </div>
         </el-header>
-        <el-main :class="[{'margin-left':isOpen}]" :style="{height:maxHeight+'px'}">
-          <router-view class="animate__animated animate__zoomIn" style="animation-duration: 700ms"></router-view>
+
+        <!-- :style="{ height: maxHeight + 'px' }" -->
+        <el-main :class="[{ 'margin-left': isOpen }]">
+          <router-view
+            class="animate__animated animate__zoomIn"
+            style="animation-duration: 700ms"
+          ></router-view>
         </el-main>
       </el-container>
     </el-container>
@@ -187,12 +251,15 @@ import menuClose from "@/assets/svg/managerIndexMenuSvg/menuClose";
 import menuOpen from "@/assets/svg/managerIndexMenuSvg/menuOpen";
 import sexSvg from "@/assets/svg/managerIndexSvg/sex";
 import phoneSvg from "@/assets/svg/managerIndexSvg/phone";
+import administratorsSvg from "@/assets/svg/managerIndexMenuSvg/administrators";
 import offSvg from "@/assets/svg/off";
 import waves from "@/directive/waves/index.js";
+import parentSvg from "@/assets/svg/managerIndexMenuSvg/parent";
 export default {
   components: {
     menuSvg,
     managerSvg,
+    parentSvg,
     stuMenu,
     stuAdd,
     teachManager,
@@ -205,6 +272,7 @@ export default {
     sexSvg,
     phoneSvg,
     offSvg,
+    administratorsSvg,
   },
   data() {
     return {
@@ -286,12 +354,15 @@ export default {
     resize() {
       const maxW = this.screenSize.maxW;
       const maxH = this.screenSize.maxH;
-      this.maxHeight = 660;
+      this.maxHeight = maxH;
     },
   },
   computed: {
     screenSize() {
       return this.$store.state.screenWH;
+    },
+    role() {
+      return this.$store.state.userInfo.role;
     },
   },
 };
@@ -379,12 +450,13 @@ li {
 .el-aside {
   text-align: center;
   width: auto !important;
-  position: absolute;
+  position: fixed;
   margin-top: 5px;
-  z-index: 20000;
+  z-index: 2000;
+  height: 100%;
+  background-color: #1e2128;
   box-shadow: 1px 0 20px rgba(0, 0, 0, 0.08);
   .index-menu {
-    background-color: #1e2128;
     min-height: 716px;
     .header {
       box-sizing: border-box;
@@ -414,7 +486,6 @@ li {
   padding: 20px;
   background-color: rgb(237, 241, 245);
   transition: all 0.3s ease-in;
-  // overflow: hidden;
 }
 .margin-left {
   margin-left: 65px;
@@ -434,7 +505,7 @@ li {
   cursor: pointer;
 }
 @media screen and (max-width: 500px) {
-  .show {
+  .show-svg {
     display: none;
   }
 }

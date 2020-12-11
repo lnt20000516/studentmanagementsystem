@@ -2,7 +2,9 @@
   <div class="class-menu">
     <div class="top-bar">
       <el-breadcrumb separator-class="el-icon-arrow-right">
-        <el-breadcrumb-item>班级管理</el-breadcrumb-item>
+        <el-breadcrumb-item style="font-weight: 800"
+          >班级管理</el-breadcrumb-item
+        >
         <el-breadcrumb-item>所有班级</el-breadcrumb-item>
       </el-breadcrumb>
     </div>
@@ -11,8 +13,9 @@
         v-model="school"
         placeholder="学校"
         filterable
-        style="margin-bottom:20px"
+        style="margin-bottom: 20px"
         @change="schoolSelect"
+        v-show="role==-1"
       >
         <el-option
           v-for="item in schoolData"
@@ -23,25 +26,37 @@
       </el-select>
       <div class="head">
         <div class="search">
-          <el-input v-model="className" placeholder="请输入班级名称"></el-input>
-          <button class="pan-btn primary-btn" @click="queryClass">立即查询</button>
+          <el-input
+            v-model="className"
+            placeholder="请输入班级名称"
+            @keyup.enter.native="queryClass"
+          ></el-input>
+          <button class="pan-btn primary-btn" @click="queryClass">
+            立即查询
+          </button>
         </div>
         <div class="add">
-          <button
-            @click="dialogclassFrom=true"
-            class="pan-btn primary-btn animate__animated animate__rotateInDownLeft"
-            style="animation-duration: 500ms"
-          >添加班级</button>
+          <button @click="dialogclassFrom = true" class="pan-btn primary-btn">
+            添加班级
+          </button>
 
           <el-dialog
             title="添加班级"
             :visible.sync="dialogclassFrom"
             :append-to-body="true"
-            width="500px"
+            width="30%"
           >
-            <el-form :model="classAddForm" :rules="rules" ref="classAddForm" label-width="80px">
+            <el-form
+              :model="classAddForm"
+              :rules="rules"
+              ref="classAddForm"
+              label-width="80px"
+            >
               <el-form-item label="班级名称" prop="class_name">
-                <el-input v-model="classAddForm.class_name" placeholder="请输入班级名称"></el-input>
+                <el-input
+                  v-model="classAddForm.class_name"
+                  placeholder="请输入班级名称"
+                ></el-input>
               </el-form-item>
               <el-form-item label="学校" prop="school">
                 <el-select
@@ -59,11 +74,15 @@
                 </el-select>
               </el-form-item>
               <el-form-item label="班主任" prop="teacher">
-                <el-select v-model="classAddForm.teacher" placeholder="老师" filterable>
+                <el-select
+                  v-model="classAddForm.teacher"
+                  placeholder="老师"
+                  filterable
+                >
                   <el-option
                     v-for="item in teacherData"
                     :key="item.id"
-                    :label="item.user.role_info.name"
+                    :label="item.user.user_details.name"
                     :value="item.id"
                   ></el-option>
                 </el-select>
@@ -71,11 +90,18 @@
             </el-form>
             <div slot="footer" class="dialog-footer">
               <button
-                style="background-color:#fff ;color:#5044d4"
+                style="background-color: #fff; color: #5044d4"
                 class="pan-btn primary-btn"
                 @click="cansoleAddClass('classAddForm')"
-              >取 消</button>
-              <button class="pan-btn primary-btn" @click="submitAddClass('classAddForm')">确 定</button>
+              >
+                取 消
+              </button>
+              <button
+                class="pan-btn primary-btn"
+                @click="submitAddClass('classAddForm')"
+              >
+                确 定
+              </button>
             </div>
           </el-dialog>
         </div>
@@ -88,20 +114,38 @@
           size="60"
         />
         <el-table :data="classData" stripe style="width: 100%">
-          <el-table-column prop="id" label="班级ID" align="center"></el-table-column>
-          <el-table-column prop="class_name" label="班级名称" align="center"></el-table-column>
-          <el-table-column prop="school.school_name" label="学校" align="center"></el-table-column>
-          <el-table-column prop="headmaster.role_info.name" label="班主任" align="center"></el-table-column>
           <el-table-column
-            prop="headmaster.role_info.phone_number"
+            prop="id"
+            label="班级ID"
+            align="center"
+          ></el-table-column>
+          <el-table-column
+            prop="class_name"
+            label="班级名称"
+            align="center"
+          ></el-table-column>
+          <el-table-column
+            prop="school.school_name"
+            label="学校"
+            align="center"
+          ></el-table-column>
+          <el-table-column
+            prop="headmaster.user_details.name"
+            label="班主任"
+            align="center"
+          ></el-table-column>
+          <el-table-column
+            prop="headmaster.phone_number"
             label="班主任联系电话"
             width="180"
             align="center"
           ></el-table-column>
-          <el-table-column label="操作" align="center">
+          <el-table-column label="操作" align="center" fixed="right">
             <template slot-scope="scope">
-              <i class="el-icon-edit" @click="editSchool(scope.row)"></i>
-              <i class="el-icon-delete" @click="deleteSchool(scope.$index,scope.row.id,classData)"></i>
+              <i
+                class="el-icon-delete"
+                @click="deleteClass(scope.$index, scope.row.id)"
+              ></i>
             </template>
           </el-table-column>
         </el-table>
@@ -109,29 +153,39 @@
           @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
           :current-page="currentPage"
-          :page-sizes="[10, 20, 30, 40]"
+          :page-sizes="[5, 10, 15, 20]"
           :page-size="pageSize"
           layout="total, sizes, prev, pager, next, jumper"
           :total="total"
+          v-if="showAllPag"
         ></el-pagination>
+        <el-pagination
+          layout="prev, pager, next"
+          @current-change="handleCurrentChange"
+          :total="total"
+          v-else
+        >
+        </el-pagination>
       </div>
     </div>
   </div>
 </template>
 <script>
 import VueElementLoading from "vue-element-loading";
+import * as classs from "@/api/manager/class";
+import { getSchool, getTeachData } from "@/api/manager/manager_common";
 export default {
   components: {
     VueElementLoading,
   },
   created() {
-    this.token = this.$store.state.userInfo.token;
-    this.getSchoolData();
+    if (this.role == -1) {
+      this.getSchoolData();
+    }
     this.getClassData(this.school);
   },
   data() {
     return {
-      token: "",
       school: 1,
       schoolData: [],
       className: "",
@@ -155,152 +209,92 @@ export default {
       currentPage: 1,
       total: 10,
       pageSize: 10,
+      showAllPag: true,
     };
   },
+  computed: {
+    screenSize() {
+      return this.$store.state.screenWH;
+    },
+    role() {
+      return this.$store.state.userInfo.role;
+    },
+  },
+  mounted() {
+    this.resize();
+  },
+  watch: {
+    screenSize(newVal) {
+      this.resize();
+    },
+  },
   methods: {
+    resize() {
+      const maxW = this.screenSize.maxW;
+      const maxH = this.screenSize.maxH;
+      if (maxW <= 500) {
+        this.showAllPag = false;
+      } else {
+        this.showAllPag = true;
+      }
+    },
     handleSizeChange(val) {
-      console.log(`每页 ${val} 条`);
+      this.pageSize = val;
+      this.getClassData(this.school);
     },
     handleCurrentChange(val) {
-      console.log(`当前页: ${val}`);
+      this.currentPage = val;
+      this.getClassData(this.school);
     },
     schoolSelect(schoolId) {
       this.getClassData(schoolId);
     },
-    getSchoolData() {
-      this.$http
-        .get("school/search", {
-          headers: {
-            TOKEN: this.token,
-          },
-        })
-        .then((res) => {
-          this.schoolData = res.data.results;
-        })
-        .catch((error) => {
-          if (error.response) {
-            this.$notify.error({
-              title: "错误",
-              message: error.response.data.message,
-            });
-            if (error.response.data.staus == "-109") {
-              this.$router.push("/login&register");
-            }
-          } else if (error.request) {
-            console.log(error.request);
-          } else {
-            console.log("Error", error.message);
-          }
-        });
+    async getSchoolData() {
+      const resultData = await getSchool();
+      if (resultData) {
+        this.schoolData = resultData;
+      }
     },
-    queryClass() {
+    async queryClass() {
       this.$store.commit("updateLoading", true);
-      this.$http
-        .get("classs/search", {
-          params: {
-            school_id: this.school,
-            class_name: this.className,
-          },
-          headers: {
-            TOKEN: this.token,
-          },
-        })
-        .then((res) => {
-          this.$store.commit("updateLoading", false);
-          this.classData = res.data.results;
-          this.total = res.data.count;
-        })
-        .catch((error) => {
-          this.$store.commit("updateLoading", false);
-          if (error.response) {
-            this.$notify.error({
-              title: "错误",
-              message: error.response.data.message,
-            });
-          } else if (error.request) {
-            console.log(error.request);
-          } else {
-            console.log("Error", error.message);
-          }
-        });
+      const resultData = await classs.queryClass(this.school, this.className);
+      if (resultData) {
+        this.classData = resultData.results;
+        this.total = resultData.count;
+      }
+      this.$store.commit("updateLoading", false);
     },
     dialogSchoolChange(id) {
       this.getTeacherData(id);
       this.classAddForm.teacher = "";
     },
-    getTeacherData(schoolId) {
-      this.$http
-        .get("teacher/search", {
-          params: {
-            school: schoolId,
-            role: 0,
-          },
-          headers: {
-            TOKEN: this.token,
-          },
-        })
-        .then((res) => {
-          this.teacherData = res.data.results;
-        })
-        .catch((error) => {
-          if (error.response) {
-            this.$notify.error({
-              title: "错误",
-              message: error.response.data.message,
-            });
-          } else if (error.request) {
-            console.log(error.request);
-          } else {
-            console.log("Error", error.message);
-          }
-        });
+    async getTeacherData(schoolId) {
+      this.teacherData = await getTeachData(schoolId);
     },
-    getClassData(schoolId) {
+    async getClassData(schoolId) {
       this.$store.commit("updateLoading", true);
-      this.$http
-        .get("classs/search", {
-          params: {
-            school_id: schoolId,
-          },
-          headers: {
-            TOKEN: this.token,
-          },
-        })
-        .then((res) => {
-          this.$store.commit("updateLoading", false);
-          this.total = res.data.count;
-          this.classData = res.data.results;
-        })
-        .catch((error) => {
-          this.$store.commit("updateLoading", false);
-          if (error.response) {
-            this.$notify.error({
-              title: "错误",
-              message: error.response.data.message,
-            });
-          } else if (error.request) {
-            console.log(error.request);
-          } else {
-            console.log("Error", error.message);
-          }
-        });
+      const resultData = await classs.getClassData(
+        schoolId,
+        this.currentPage,
+        this.pageSize
+      );
+      if (resultData) {
+        this.total = resultData.count;
+        this.classData = resultData.results;
+      }
+      this.$store.commit("updateLoading", false);
     },
     submitAddClass(formName) {
-      this.$refs[formName].validate((valid) => {
+      this.$refs[formName].validate(async (valid) => {
         if (valid) {
-          this.$http
-            .post("classs/insert", this.classAddForm, {
-              headers: {
-                TOKEN: this.token,
-              },
-            })
-            .then((res) => {
-              this.$message.success("添加成功");
-              this.dialogclassFrom = false;
-              this.getClassData(this.classAddForm.school);
-              this.school = this.classAddForm.school;
-              this.$refs[formName].resetFields();
-            });
+          const resultData = await classs.submitAddClass(this.classAddForm);
+          if (resultData) {
+            this.$message.success("添加成功");
+            this.dialogclassFrom = false;
+            this.getClassData(this.classAddForm.school);
+            this.school = this.classAddForm.school;
+            this.$refs[formName].resetFields();
+          }
         } else {
           console.log("error submit!!");
           return false;
@@ -310,6 +304,29 @@ export default {
     cansoleAddClass(formName) {
       this.dialogclassFrom = false;
       this.$refs[formName].resetFields();
+    },
+    deleteClass(index, id) {
+      this.$confirm(
+        "此操作将永久删除该班级,并将该班级与老师的绑定解除，是否继续?",
+        "提示",
+        {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning",
+        }
+      )
+        .then(async () => {
+          const resultData = await classs.deleteClass(id);
+          if (resultData) {
+            this.classData.splice(index, 1);
+          }
+        })
+        .catch(() => {
+          this.$message({
+            type: "info",
+            message: "已取消删除",
+          });
+        });
     },
   },
 };
@@ -326,6 +343,7 @@ export default {
       display: flex;
       flex-direction: row;
       align-items: center;
+
       .search {
         width: 30%;
         display: flex;
@@ -359,12 +377,15 @@ export default {
     }
   }
 }
-
+i {
+  cursor: pointer;
+}
 .el-dialog .el-select {
   width: 100%;
 }
 .pan-btn {
   margin-left: 10px;
+  min-width: 80px;
 }
 
 @media screen and (max-width: 1436px) {
@@ -381,6 +402,14 @@ export default {
 @media screen and (max-width: 540px) {
   .class-menu .class-menu-main .head .el-form-item {
     margin-bottom: 17px;
+  }
+}
+@media screen and (max-width: 500px) {
+  .el-dialog {
+    width: 80% !important;
+  }
+  .search .el-input {
+    width: 130px !important;
   }
 }
 </style>

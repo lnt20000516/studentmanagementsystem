@@ -18,16 +18,16 @@ export async function getStuData(resData) {
     store.commit("updateLoading", false);
     let resData = res;
     resData.results.forEach((item) => {
-      let birthday = new Date(item.user.role_info.birthday * 1000);
+      let birthday = new Date(item.user.user_details.birthday * 1000);
       let month = birthday.getMonth() + 1;
       if (month < 10) month = "0" + month;
       let day = birthday.getDate();
       if (day < 10) day = "0" + day;
-      item.user.role_info.birthday =
+      item.user.user_details.birthday =
         birthday.getFullYear() + "-" + month + "-" + day;
-      if (item.user.role_info.sex == 1) item.user.role_info.sex = "男";
-      if (item.user.role_info.sex == 0) item.user.role_info.sex = "保密";
-      if (item.user.role_info.sex == -1) item.user.role_info.sex = "女";
+      if (item.user.user_details.sex == 1) item.user.user_details.sex = "男";
+      if (item.user.user_details.sex == 0) item.user.user_details.sex = "保密";
+      if (item.user.user_details.sex == -1) item.user.user_details.sex = "女";
     });
     return resData;
   } else {
@@ -60,16 +60,16 @@ export async function queryStudent(schoolId, select, value) {
   );
   if (res.code == undefined) {
     res.results.forEach((item) => {
-      let birthday = new Date(item.user.role_info.birthday * 1000);
+      let birthday = new Date(item.user.user_details.birthday * 1000);
       let month = birthday.getMonth() + 1;
       if (month < 10) month = "0" + month;
       let day = birthday.getDate();
       if (day < 10) day = "0" + day;
-      item.user.role_info.birthday =
+      item.user.user_details.birthday =
         birthday.getFullYear() + "-" + month + "-" + day;
-      if (item.user.role_info.sex == 1) item.user.role_info.sex = "男";
-      if (item.user.role_info.sex == 0) item.user.role_info.sex = "保密";
-      if (item.user.role_info.sex == -1) item.user.role_info.sex = "女";
+      if (item.user.user_details.sex == 1) item.user.user_details.sex = "男";
+      if (item.user.user_details.sex == 0) item.user.user_details.sex = "保密";
+      if (item.user.user_details.sex == -1) item.user.user_details.sex = "女";
     });
     return res;
   } else {
@@ -88,7 +88,6 @@ export async function submitEditForm(editForm) {
   const {
     data: res
   } = await http.patch("student/amdupdate/" + editForm.id, {
-    // phone_number: this.editForm.phone_number,
     user_details: {
       name: editForm.name,
       sex: editForm.sex,
@@ -104,9 +103,15 @@ export async function submitEditForm(editForm) {
       TOKEN: token,
     },
   })
-  if (res.code != 200) {
+  console.log(res.code != 200);
+  if (res.code == 200) {
     return true
   } else {
+    console.log(res.message);
+    ElementUI.Message({
+      message: res.message,
+      type: "error"
+    })
     return false
   }
 
@@ -146,5 +151,34 @@ export async function submitAddForm(stuForm) {
     return false;
   } else {
     return true;
+  }
+}
+export async function batchDeletion(id_list) {
+  const token = store.state.userInfo.token;
+  let idList = {
+    id_list: id_list
+  }
+  const {
+    data: res
+  } = await http.post("student/delete_all", idList, {
+    headers: {
+      TOKEN: token
+    }
+  })
+  console.log(res);
+  if (res.code != 200) {
+    ElementUI.Message({
+      showClose: false,
+      message: "删除失败！",
+      type: 'error'
+    });
+    return false
+  } else {
+    ElementUI.Message({
+      showClose: false,
+      message: "删除成功！",
+      type: 'success'
+    });
+    return true
   }
 }

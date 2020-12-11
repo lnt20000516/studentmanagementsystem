@@ -50,6 +50,30 @@ const router = {
       meta: {
         needLogin: true
       }
+    },
+    {
+      path: 'parentMenu',
+      name: 'parentMenu',
+      component: () => import("@/views/manager/parent/parentMenu.vue"),
+      meta: {
+        needLogin: true
+      }
+    },
+    {
+      path: 'parentAdd',
+      name: 'parentAdd',
+      component: () => import("@/views/manager/parent/addParent.vue"),
+      meta: {
+        needLogin: true
+      }
+    },
+    {
+      path: 'administratorsMenu',
+      name: 'administratorsMenu',
+      component: () => import("@/views/manager/administrators/administratorsMenu"),
+      meta: {
+        needLogin: true
+      }
     }
   ]
 }
