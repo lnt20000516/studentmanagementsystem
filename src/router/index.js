@@ -29,7 +29,7 @@ const error = {
 const routes = baseRoutes.concat([signIn, manager, teacher, error]);
 
 const router = new VueRouter({
-  mode: 'history',
+  // mode: 'history',
   base: process.env.BASE_URL,
   routes
 });
